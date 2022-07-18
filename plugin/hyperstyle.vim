@@ -28,12 +28,21 @@ function! s:enable(semi)
 endfunction
 
 function! s:map_key(key, binding)
-  let oldmap = maparg(a:key, 'i')
+  let oldmap_dict = maparg(a:key, 'i', 0, 1)
+  let oldmap = get(oldmap_dict, 'rhs', '')
+
+  " If there's already a mapping with <expr> then we currently *do not*
+  " override it. Future work could create our own expression mapping
+  " that evals the rhs of the original mapping, but its simpler to just
+  " not interfere.
+  let expr = get(oldmap_dict, 'expr', 0)
 
   if oldmap =~# "<Plug>(".a:binding.")"
     " already mapped. maybe the user was playing with `set ft`
   elseif oldmap != ""
-    exe "imap <silent> ".a:key." ".oldmap."<Plug>(".a:binding.")"
+    if !expr
+      exe "imap <silent> <buffer> ".a:key." ".oldmap."<Plug>(".a:binding.")"
+    endif
   else
     exe "imap <silent> <buffer> ".a:key." ".a:key."<Plug>(".a:binding.")"
   endif
@@ -63,8 +72,8 @@ if globpath(&rtp, 'plugin/auto-pairs.vim') != ''
     let b:hyperstyle_ap_fix = 1
     exe 'iunmap <buffer> <Space>'
     exe 'imap <silent> <buffer> <Space> <Space><Plug>(hyperstyle-space)'
-    exe 'iunmap <buffer> <CR>'
-    exe 'imap <silent> <buffer> <CR> <CR><Plug>(hyperstyle-cr)'
+    " exe 'iunmap <buffer> <CR>'
+    " exe 'imap <silent> <buffer> <CR> <CR><Plug>(hyperstyle-cr)'
   endfunction
   au InsertEnter * :call s:rescue_bindings()
 endif

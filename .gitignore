@@ -2,3 +2,5 @@
 vendor
 doc/hyperstyle.txt.new
 doc/tags
+*.un~
+.DS_Store
